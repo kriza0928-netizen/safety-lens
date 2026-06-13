@@ -8,6 +8,7 @@ import BottomNav from "@/components/BottomNav";
 import ImageCapture from "@/components/ImageCapture";
 import ImagePreview from "@/components/ImagePreview";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { formatAnalysisError } from "@/lib/errors";
 import { saveAnalysis } from "@/lib/storage";
 import type {
   AnalyzeErrorResponse,
@@ -22,13 +23,15 @@ export default function HomePage() {
   const [state, setState] = useState<AppState>("idle");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageDataUrl, setImageDataUrl] = useState<string>("");
+  const [imageMimeType, setImageMimeType] = useState<string>("image/jpeg");
   const [result, setResult] = useState<SafetyAnalysisResult | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const handleImageSelect = (file: File, dataUrl: string) => {
+  const handleImageSelect = (file: File, dataUrl: string, mimeType: string) => {
     setImageFile(file);
     setImageDataUrl(dataUrl);
+    setImageMimeType(mimeType);
     setResult(null);
     setSavedId(null);
     setErrorMessage("");
@@ -38,6 +41,7 @@ export default function HomePage() {
   const handleClear = () => {
     setImageFile(null);
     setImageDataUrl("");
+    setImageMimeType("image/jpeg");
     setResult(null);
     setSavedId(null);
     setErrorMessage("");
@@ -59,7 +63,7 @@ export default function HomePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           image: base64,
-          mimeType: imageFile.type,
+          mimeType: imageMimeType,
         }),
       });
 
@@ -83,9 +87,7 @@ export default function HomePage() {
       setSavedId(saved.id);
       setState("result");
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "분석 중 오류가 발생했습니다.",
-      );
+      setErrorMessage(formatAnalysisError(error));
       setState("error");
     }
   };

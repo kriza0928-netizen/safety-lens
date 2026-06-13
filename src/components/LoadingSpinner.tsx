@@ -13,7 +13,7 @@ export default function LoadingSpinner({
       </div>
       <p className="text-sm font-medium text-slate-600">{message}</p>
       <p className="text-xs text-slate-400">
-        Gemini AI가 현장 사진을 분석하고 있습니다
+        Gemini AI가 현장 사진을 분석하고 있습니다 (최대 1분)
       </p>
     </div>
   );

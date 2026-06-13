@@ -1,3 +1,4 @@
+import { formatAnalysisError } from "@/lib/errors";
 import { analyzeSafetyImage } from "@/lib/gemini";
 import type { AnalyzeRequestBody } from "@/lib/types";
 import { NextResponse } from "next/server";
@@ -28,8 +29,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, result });
   } catch (error) {
     console.error("Analysis error:", error);
-    const message =
-      error instanceof Error ? error.message : "분석 중 오류가 발생했습니다.";
+    const message = formatAnalysisError(error);
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

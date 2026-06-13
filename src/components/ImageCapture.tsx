@@ -1,7 +1,13 @@
 "use client";
 
+import { compressImageForAnalysis } from "@/lib/image";
+
 interface ImageCaptureProps {
-  onImageSelect: (file: File, dataUrl: string) => void;
+  onImageSelect: (
+    file: File,
+    dataUrl: string,
+    mimeType: string,
+  ) => void | Promise<void>;
   disabled?: boolean;
 }
 
@@ -9,15 +15,21 @@ export default function ImageCapture({
   onImageSelect,
   disabled,
 }: ImageCaptureProps) {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      onImageSelect(file, reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressImageForAnalysis(file);
+      await onImageSelect(file, compressed.dataUrl, compressed.mimeType);
+    } catch {
+      const reader = new FileReader();
+      reader.onload = () => {
+        void onImageSelect(file, reader.result as string, file.type);
+      };
+      reader.readAsDataURL(file);
+    }
+
     e.target.value = "";
   };
 
