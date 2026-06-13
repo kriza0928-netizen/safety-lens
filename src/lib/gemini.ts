@@ -60,18 +60,39 @@ function parseAnalysisResult(text: string): SafetyAnalysisResult {
   };
 }
 
-export async function analyzeSafetyImage(
+const DEFAULT_MODELS = [
+  process.env.GEMINI_MODEL,
+  "gemini-2.5-flash",
+  "gemini-2.0-flash-lite",
+  "gemini-1.5-flash",
+].filter((model): model is string => Boolean(model));
+
+function formatGeminiError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+
+  if (message.includes("429") || message.includes("quota")) {
+    return "Gemini API 사용 한도를 초과했습니다. Google AI Studio에서 할당량을 확인하거나, 잠시 후 다시 시도해 주세요.";
+  }
+
+  if (message.includes("403") || message.includes("API key not valid")) {
+    return "API Key가 올바르지 않습니다. Vercel 환경 변수의 GEMINI_API_KEY 값을 확인해 주세요.";
+  }
+
+  if (message.includes("404") && message.includes("models/")) {
+    return "선택한 Gemini 모델을 사용할 수 없습니다. GEMINI_MODEL 환경 변수를 확인해 주세요.";
+  }
+
+  return "이미지 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+}
+
+async function analyzeWithModel(
+  genAI: GoogleGenerativeAI,
+  modelName: string,
   imageBase64: string,
   mimeType: string,
 ): Promise<SafetyAnalysisResult> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY가 설정되지 않았습니다.");
-  }
-
-  const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: modelName,
     generationConfig: {
       temperature: 0.3,
       responseMimeType: "application/json",
@@ -94,4 +115,37 @@ export async function analyzeSafetyImage(
   }
 
   return parseAnalysisResult(text);
+}
+
+export async function analyzeSafetyImage(
+  imageBase64: string,
+  mimeType: string,
+): Promise<SafetyAnalysisResult> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY가 설정되지 않았습니다.");
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const models = [...new Set(DEFAULT_MODELS)];
+  let lastError: unknown;
+
+  for (const modelName of models) {
+    try {
+      return await analyzeWithModel(genAI, modelName, imageBase64, mimeType);
+    } catch (error) {
+      lastError = error;
+      const message = error instanceof Error ? error.message : String(error);
+      const isQuotaError =
+        message.includes("429") || message.includes("quota");
+
+      if (isQuotaError && modelName !== models.at(-1)) {
+        continue;
+      }
+
+      throw new Error(formatGeminiError(error));
+    }
+  }
+
+  throw new Error(formatGeminiError(lastError));
 }
