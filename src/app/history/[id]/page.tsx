@@ -94,7 +94,10 @@ export default function HistoryDetailPage() {
           />
         </div>
 
-        <AnalysisResultView result={analysis.result} />
+        <AnalysisResultView
+          result={analysis.result}
+          mode={analysis.mode ?? "ai"}
+        />
       </main>
 
       {showDeleteConfirm && (

@@ -21,16 +21,19 @@ export interface SavedAnalysis {
   createdAt: string;
   imageDataUrl: string;
   result: SafetyAnalysisResult;
+  mode?: "demo" | "ai";
 }
 
 export interface AnalyzeRequestBody {
   image: string;
   mimeType: string;
+  apiKey?: string;
 }
 
 export interface AnalyzeResponse {
   success: true;
   result: SafetyAnalysisResult;
+  mode: "demo" | "ai";
 }
 
 export interface AnalyzeErrorResponse {

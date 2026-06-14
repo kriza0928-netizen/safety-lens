@@ -24,9 +24,21 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = await analyzeSafetyImage(body.image, body.mimeType);
+    const apiKey = body.apiKey?.trim() || process.env.GEMINI_API_KEY?.trim();
+    if (!apiKey) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "AI 분석을 위해 Gemini API Key가 필요합니다. 설정 화면에서 본인 API Key를 등록해 주세요.",
+        },
+        { status: 400 },
+      );
+    }
 
-    return NextResponse.json({ success: true, result });
+    const result = await analyzeSafetyImage(body.image, body.mimeType, apiKey);
+
+    return NextResponse.json({ success: true, result, mode: "ai" as const });
   } catch (error) {
     console.error("Analysis error:", error);
     const message = formatAnalysisError(error);

@@ -5,6 +5,7 @@ import type { SafetyAnalysisResult } from "@/lib/types";
 interface AnalysisResultProps {
   result: SafetyAnalysisResult;
   showSaveNotice?: boolean;
+  mode?: "demo" | "ai";
 }
 
 function ListItems({
@@ -35,11 +36,20 @@ function ListItems({
 export default function AnalysisResultView({
   result,
   showSaveNotice,
+  mode = "ai",
 }: AnalysisResultProps) {
   const isHighRisk = result.riskLevel === "high" || result.riskLevel === "critical";
 
   return (
     <div className="space-y-4">
+      {mode === "demo" && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          <strong>데모 모드</strong> — 사진 AI 분석이 아닌 일반 안전 점검
+          가이드입니다. 실제 AI 분석은 설정 → AI 분석 모드에서 API Key를
+          등록하세요.
+        </div>
+      )}
+
       {showSaveNotice && (
         <div className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
           분석 결과가 이력에 저장되었습니다.

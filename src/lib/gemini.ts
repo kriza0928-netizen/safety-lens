@@ -107,10 +107,10 @@ async function analyzeWithModel(
 export async function analyzeSafetyImage(
   imageBase64: string,
   mimeType: string,
+  apiKey: string,
 ): Promise<SafetyAnalysisResult> {
-  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY가 설정되지 않았습니다.");
+    throw new Error("Gemini API Key가 필요합니다.");
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
