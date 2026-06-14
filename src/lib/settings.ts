@@ -8,7 +8,7 @@ export interface AppSettings {
 const SETTINGS_KEY = "safety-lens-settings";
 
 const DEFAULT_SETTINGS: AppSettings = {
-  mode: "demo",
+  mode: "ai",
   apiKey: "",
 };
 
@@ -38,5 +38,5 @@ export function saveSettings(settings: AppSettings): void {
 }
 
 export function getModeLabel(mode: AnalysisMode): string {
-  return mode === "demo" ? "데모 (무료)" : "AI 분석";
+  return mode === "demo" ? "데모" : "Gemini AI";
 }

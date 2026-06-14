@@ -14,11 +14,6 @@ import { formatAnalysisError } from "@/lib/errors";
 import { getModeLabel, getSettings } from "@/lib/settings";
 import { saveAnalysis } from "@/lib/storage";
 import type { AnalysisMode } from "@/lib/settings";
-import {
-  checkAiUsageAllowed,
-  getRemainingDailyUses,
-  recordAiUsage,
-} from "@/lib/usage-guard";
 import type {
   AnalyzeErrorResponse,
   AnalyzeResponse,
@@ -34,10 +29,10 @@ export default function HomePage() {
   const [imageDataUrl, setImageDataUrl] = useState<string>("");
   const [imageMimeType, setImageMimeType] = useState<string>("image/jpeg");
   const [result, setResult] = useState<SafetyAnalysisResult | null>(null);
-  const [resultMode, setResultMode] = useState<AnalysisMode>("demo");
+  const [resultMode, setResultMode] = useState<AnalysisMode>("ai");
   const [savedId, setSavedId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const [analysisMode, setAnalysisMode] = useState<AnalysisMode>("demo");
+  const [analysisMode, setAnalysisMode] = useState<AnalysisMode>("ai");
 
   useEffect(() => {
     setAnalysisMode(getSettings().mode);
@@ -97,17 +92,6 @@ export default function HomePage() {
         return;
       }
 
-      const usageCheck = checkAiUsageAllowed();
-      if (!usageCheck.allowed) {
-        throw new Error(usageCheck.reason);
-      }
-
-      if (!settings.apiKey.trim()) {
-        throw new Error(
-          "AI 분석을 위해 설정에서 Gemini API Key를 등록해 주세요.",
-        );
-      }
-
       const base64 = imageDataUrl.split(",")[1];
       if (!base64) throw new Error("이미지 데이터를 읽을 수 없습니다.");
 
@@ -117,7 +101,9 @@ export default function HomePage() {
         body: JSON.stringify({
           image: base64,
           mimeType: imageMimeType,
-          apiKey: settings.apiKey.trim(),
+          ...(settings.apiKey.trim()
+            ? { apiKey: settings.apiKey.trim() }
+            : {}),
         }),
       });
 
@@ -129,7 +115,6 @@ export default function HomePage() {
         throw new Error(data.error);
       }
 
-      recordAiUsage();
       saveResult(data.result, "ai");
     } catch (error) {
       setErrorMessage(formatAnalysisError(error));
@@ -138,8 +123,6 @@ export default function HomePage() {
   };
 
   const modeLabel = getModeLabel(analysisMode);
-  const remainingUses =
-    analysisMode === "ai" ? getRemainingDailyUses() : null;
 
   return (
     <div className="flex min-h-full flex-col bg-slate-50">
@@ -169,14 +152,9 @@ export default function HomePage() {
               </h2>
               <p className="text-sm text-slate-500">
                 {analysisMode === "demo"
-                  ? "데모 모드: API 없이 무료 안전 점검 가이드를 제공합니다."
-                  : "AI 모드: 본인 API Key로 사진 기반 분석을 실행합니다."}
+                  ? "데모 모드: 참고용 안전 점검 가이드를 표시합니다."
+                  : "사진을 촬영하거나 업로드하면 Gemini AI가 위험요소를 분석합니다."}
               </p>
-              {remainingUses !== null && (
-                <p className="mt-1 text-xs text-slate-400">
-                  오늘 남은 AI 분석: {remainingUses}회
-                </p>
-              )}
             </div>
 
             {!imageDataUrl ? (
@@ -189,20 +167,14 @@ export default function HomePage() {
                 <ImagePreview dataUrl={imageDataUrl} onClear={handleClear} />
 
                 {state === "analyzing" ? (
-                  <LoadingSpinner
-                    message={
-                      analysisMode === "demo"
-                        ? "데모 분석 준비 중..."
-                        : "AI 분석 중..."
-                    }
-                  />
+                  <LoadingSpinner />
                 ) : (
                   <button
                     type="button"
                     onClick={handleAnalyze}
                     className="w-full rounded-2xl bg-orange-500 py-4 text-base font-bold text-white shadow-lg shadow-orange-200 transition-all hover:bg-orange-600 active:scale-[0.98] disabled:opacity-50"
                   >
-                    {analysisMode === "demo" ? "데모 분석 시작" : "AI 안전 분석"}
+                    {analysisMode === "demo" ? "데모 분석 시작" : "안전 분석 시작"}
                   </button>
                 )}
 

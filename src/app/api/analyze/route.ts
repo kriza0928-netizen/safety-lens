@@ -30,7 +30,7 @@ export async function POST(request: Request) {
         {
           success: false,
           error:
-            "AI 분석을 위해 Gemini API Key가 필요합니다. 설정 화면에서 본인 API Key를 등록해 주세요.",
+            "GEMINI_API_KEY가 설정되지 않았습니다. .env.local 또는 Vercel 환경 변수에 API Key를 등록해 주세요.",
         },
         { status: 400 },
       );

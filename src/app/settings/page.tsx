@@ -4,10 +4,6 @@ import { useEffect, useState } from "react";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import {
-  AI_USAGE_LIMIT,
-  getRemainingDailyUses,
-} from "@/lib/usage-guard";
-import {
   getSettings,
   saveSettings,
   type AnalysisMode,
@@ -16,16 +12,14 @@ import {
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<AppSettings>({
-    mode: "demo",
+    mode: "ai",
     apiKey: "",
   });
   const [showKey, setShowKey] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [remainingUses, setRemainingUses] = useState(AI_USAGE_LIMIT);
 
   useEffect(() => {
     setSettings(getSettings());
-    setRemainingUses(getRemainingDailyUses());
   }, []);
 
   const handleSave = () => {
@@ -47,26 +41,7 @@ export default function SettingsPage() {
           <h2 className="mb-3 text-sm font-bold text-slate-800">분석 모드</h2>
 
           <div className="space-y-2">
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-              <input
-                type="radio"
-                name="mode"
-                checked={settings.mode === "demo"}
-                onChange={() => handleModeChange("demo")}
-                className="mt-1"
-              />
-              <div>
-                <p className="text-sm font-semibold text-emerald-800">
-                  데모 모드 (무료 · 기본)
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-emerald-700">
-                  API 호출 없음. 일반적인 안전 점검 가이드를 즉시 제공합니다.
-                  비용 0원, 횟수 제한 없음.
-                </p>
-              </div>
-            </label>
-
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-3">
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-orange-200 bg-orange-50 p-3">
               <input
                 type="radio"
                 name="mode"
@@ -75,12 +50,28 @@ export default function SettingsPage() {
                 className="mt-1"
               />
               <div>
-                <p className="text-sm font-semibold text-slate-800">
-                  AI 분석 (본인 API Key)
+                <p className="text-sm font-semibold text-orange-800">
+                  Gemini AI 분석 (기본)
                 </p>
+                <p className="mt-1 text-xs leading-relaxed text-orange-700">
+                  사진을 Gemini Vision API로 분석합니다. 서버에 설정된
+                  GEMINI_API_KEY를 사용합니다.
+                </p>
+              </div>
+            </label>
+
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-3">
+              <input
+                type="radio"
+                name="mode"
+                checked={settings.mode === "demo"}
+                onChange={() => handleModeChange("demo")}
+                className="mt-1"
+              />
+              <div>
+                <p className="text-sm font-semibold text-slate-800">데모 모드</p>
                 <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                  Google Gemini 무료 API Key로 사진 기반 AI 분석. 앱 운영자
-                  비용 0원, 본인 Google 무료 한도 사용.
+                  API 호출 없이 일반 안전 점검 가이드만 표시합니다.
                 </p>
               </div>
             </label>
@@ -90,11 +81,11 @@ export default function SettingsPage() {
         {settings.mode === "ai" && (
           <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="mb-1 text-sm font-bold text-slate-800">
-              Gemini API Key
+              개인 API Key (선택)
             </h2>
             <p className="mb-3 text-xs text-slate-500">
-              본인 Google 계정에서 발급한 Key만 사용합니다. 기기에만 저장되며
-              서버에 영구 보관되지 않습니다.
+              비워두면 서버의 GEMINI_API_KEY를 사용합니다. 입력하면 본인 Key로
+              분석합니다.
             </p>
 
             <div className="relative">
@@ -104,7 +95,7 @@ export default function SettingsPage() {
                 onChange={(e) =>
                   setSettings((prev) => ({ ...prev, apiKey: e.target.value }))
                 }
-                placeholder="AIza..."
+                placeholder="비워두면 서버 Key 사용"
                 className="w-full rounded-xl border border-slate-300 px-4 py-3 pr-12 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
               />
               <button
@@ -122,13 +113,8 @@ export default function SettingsPage() {
               rel="noopener noreferrer"
               className="mt-3 inline-block text-xs font-semibold text-orange-600 underline"
             >
-              Google AI Studio에서 무료 API Key 발급 →
+              Google AI Studio에서 API Key 발급 →
             </a>
-
-            <p className="mt-3 text-xs text-slate-400">
-              AI 분석 보호: 하루 최대 {AI_USAGE_LIMIT}회, 요청 간격 15초 (오늘
-              남은 횟수: {remainingUses}회)
-            </p>
           </section>
         )}
 
@@ -142,10 +128,9 @@ export default function SettingsPage() {
 
         <section className="rounded-xl bg-slate-100 px-4 py-3">
           <p className="text-xs leading-relaxed text-slate-500">
-            <strong className="text-slate-600">0원 구조:</strong> 데모 모드는
-            API를 전혀 사용하지 않습니다. AI 모드는 본인 Google 무료 한도만
-            사용하므로 앱 운영 비용이 발생하지 않습니다. Vercel 서버의
-            GEMINI_API_KEY는 더 이상 필수가 아닙니다.
+            로컬: 프로젝트 루트 <code className="text-slate-600">.env.local</code>
+            에 GEMINI_API_KEY 설정. Vercel: Environment Variables에 동일하게
+            등록.
           </p>
         </section>
       </main>
