@@ -98,12 +98,15 @@ export async function searchLaw(query: string): Promise<LawSearchItem[]> {
   const rawList = root["law"];
   const list = toArray(rawList as Record<string, unknown>);
 
-  return list.map((item) => ({
-    mst: String(item["법령일련번호"] ?? ""),
-    lawName: String(item["법령명한글"] ?? ""),
-    promulgationDate: String(item["공포일자"] ?? ""),
-    enforcementDate: String(item["시행일자"] ?? ""),
-  }));
+  return list.map((item) => {
+    const row = item as Record<string, unknown>;
+    return {
+      mst: String(row["법령일련번호"] ?? ""),
+      lawName: String(row["법령명한글"] ?? ""),
+      promulgationDate: String(row["공포일자"] ?? ""),
+      enforcementDate: String(row["시행일자"] ?? ""),
+    };
+  });
 }
 
 export async function resolveMst(lawName: string): Promise<string> {

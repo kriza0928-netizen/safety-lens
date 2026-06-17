@@ -12,7 +12,7 @@ type Step = "input" | "loading" | "result" | "asking" | "answered";
 const PRESET_LAWS = Object.values(KNOWN_LAW_NAMES);
 
 export default function LawPage() {
-  const [lawName, setLawName] = useState(KNOWN_LAW_NAMES.SAFETY_STANDARDS_RULE);
+  const [lawName, setLawName] = useState<string>(KNOWN_LAW_NAMES.SAFETY_STANDARDS_RULE);
   const [articleNo, setArticleNo] = useState("");
   const [question, setQuestion] = useState("");
   const [step, setStep] = useState<Step>("input");
