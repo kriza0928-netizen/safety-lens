@@ -50,5 +50,27 @@ export function generateDemoAnalysis(): SafetyAnalysisResult {
       "장비·공구 안전 상태",
       "위험 표지판·출입통제",
     ],
+    legalReferences: [
+      {
+        law: "산업안전보건법",
+        article: "제38조 제1항",
+        description: "사업주는 추락·붕괴 등의 위험이 있는 장소에 안전조치를 하여야 한다.",
+      },
+      {
+        law: "산업안전보건기준에 관한 규칙",
+        article: "제13조 제1항",
+        description: "사업주는 높이 2미터 이상의 작업발판 끝이나 개구부에 안전난간을 설치하여야 한다.",
+      },
+      {
+        law: "산업안전보건기준에 관한 규칙",
+        article: "제32조 제1항",
+        description: "사업주는 근로자에게 안전모·안전화 등 보호구를 지급하고 착용하도록 하여야 한다.",
+      },
+      {
+        law: "KOSHA GUIDE",
+        article: "G-81-2023",
+        description: "추락재해 예방을 위한 안전작업 지침",
+      },
+    ],
   };
 }

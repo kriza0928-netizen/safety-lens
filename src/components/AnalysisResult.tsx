@@ -126,6 +126,24 @@ export default function AnalysisResultView({
       <SectionCard title="안전관리 체크포인트">
         <ListItems items={result.safetyCheckpoints} bulletColor="bg-slate-500" />
       </SectionCard>
+
+      {result.legalReferences && result.legalReferences.length > 0 && (
+        <SectionCard title="법적 근거">
+          <div className="space-y-3">
+            {result.legalReferences.map((ref, index) => (
+              <div key={index} className="rounded-xl border border-slate-200 bg-white p-3">
+                <div className="mb-1 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
+                    {ref.law}
+                  </span>
+                  <span className="text-xs font-bold text-slate-800">{ref.article}</span>
+                </div>
+                <p className="text-sm text-slate-600">{ref.description}</p>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      )}
     </div>
   );
 }

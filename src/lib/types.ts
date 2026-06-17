@@ -5,6 +5,12 @@ export interface HazardItem {
   description: string;
 }
 
+export interface LegalReference {
+  law: string;
+  article: string;
+  description: string;
+}
+
 export interface SafetyAnalysisResult {
   siteSummary: string;
   hazards: HazardItem[];
@@ -14,6 +20,7 @@ export interface SafetyAnalysisResult {
   preventionMeasures: string[];
   additionalChecks: string[];
   safetyCheckpoints: string[];
+  legalReferences: LegalReference[];
 }
 
 export interface SavedAnalysis {

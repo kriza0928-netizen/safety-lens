@@ -27,24 +27,27 @@ export default function ImageCapture({
       reader.onload = () => {
         void onImageSelect(file, reader.result as string, file.type);
       };
+      reader.onerror = () => { /* silent */ };
       reader.readAsDataURL(file);
     }
 
     e.target.value = "";
   };
 
+  const cardBase = "relative flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed p-5 transition-all overflow-hidden";
+
   return (
     <div className="grid grid-cols-2 gap-3">
-      <label
-        className={`flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-orange-300 bg-orange-50 p-5 transition-all hover:border-orange-400 hover:bg-orange-100 ${disabled ? "pointer-events-none opacity-50" : ""}`}
+      <div
+        className={`${cardBase} border-orange-300 bg-orange-50 hover:border-orange-400 hover:bg-orange-100 ${disabled ? "pointer-events-none opacity-50" : ""}`}
       >
         <input
           type="file"
           accept="image/*"
           capture="environment"
-          className="hidden"
           onChange={handleChange}
           disabled={disabled}
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
         />
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-500 text-white">
           <svg
@@ -68,17 +71,17 @@ export default function ImageCapture({
         </div>
         <span className="text-sm font-semibold text-orange-700">사진 촬영</span>
         <span className="text-xs text-orange-500">카메라로 촬영</span>
-      </label>
+      </div>
 
-      <label
-        className={`flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-5 transition-all hover:border-slate-400 hover:bg-slate-100 ${disabled ? "pointer-events-none opacity-50" : ""}`}
+      <div
+        className={`${cardBase} border-slate-300 bg-slate-50 hover:border-slate-400 hover:bg-slate-100 ${disabled ? "pointer-events-none opacity-50" : ""}`}
       >
         <input
           type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          className="hidden"
+          accept="image/*"
           onChange={handleChange}
           disabled={disabled}
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
         />
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-600 text-white">
           <svg
@@ -97,7 +100,7 @@ export default function ImageCapture({
         </div>
         <span className="text-sm font-semibold text-slate-700">이미지 업로드</span>
         <span className="text-xs text-slate-500">갤러리에서 선택</span>
-      </label>
+      </div>
     </div>
   );
 }

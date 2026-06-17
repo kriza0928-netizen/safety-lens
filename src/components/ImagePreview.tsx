@@ -1,11 +1,20 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 interface ImagePreviewProps {
   dataUrl: string;
   onClear: () => void;
 }
 
 export default function ImagePreview({ dataUrl, onClear }: ImagePreviewProps) {
+  const [clearEnabled, setClearEnabled] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setClearEnabled(true), 600);
+    return () => clearTimeout(timer);
+  }, [dataUrl]);
+
   return (
     <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -16,7 +25,8 @@ export default function ImagePreview({ dataUrl, onClear }: ImagePreviewProps) {
       />
       <button
         type="button"
-        onClick={onClear}
+        onClick={clearEnabled ? onClear : undefined}
+        disabled={!clearEnabled}
         className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
         aria-label="이미지 제거"
       >
