@@ -10,15 +10,24 @@ import type { SafetyAnalysisResult } from "./types";
 
 // ─── Stage 1 프롬프트: 위험요소 추출만 ────────────────────────
 
-const HAZARD_EXTRACTION_PROMPT = `당신은 산업안전 현장 전문가입니다.
-이 사진에서 보이는 위험 요소를 아래 형식으로만 답하세요.
-법령 번호는 절대 언급하지 마세요.
+const HAZARD_EXTRACTION_PROMPT = `당신은 산업안전보건 법령 전문가입니다.
+이 사진에서 보이는 위험 요소를 분석하고, 관련 법령 조문을 법제처 API로 조회할 수 있도록 아래 JSON 형식으로만 답하세요.
+
+규칙:
+- 조회할법령은 실제로 존재할 가능성이 높은 조문만 포함하세요.
+- 법령명은 정확한 공식 명칭을 사용하세요 (예: "산업안전보건기준에 관한 규칙", "산업안전보건법").
+- 조번호는 숫자만 입력하세요 (예: "32", "42").
+- 확실하지 않은 조번호는 포함하지 마세요.
 
 {
   "위험요소": ["사다리 고정 안됨", "안전모 미착용"],
   "작업유형": "고소작업 / 전기작업 / 화학물질취급 / 중장비 / 기타",
   "위험부위": ["머리", "손", "발"],
-  "추정위험등급": "상 / 중 / 하"
+  "추정위험등급": "상 / 중 / 하",
+  "조회할법령": [
+    {"법령": "산업안전보건기준에 관한 규칙", "조": "32"},
+    {"법령": "산업안전보건법", "조": "38"}
+  ]
 }
 JSON만 반환하고 다른 말은 하지 마세요.`;
 
@@ -59,11 +68,17 @@ ${hazardJson}
 
 // ─── 타입 ────────────────────────────────────────────────────
 
+export interface LawArticleHint {
+  법령: string;
+  조: string;
+}
+
 export interface HazardExtraction {
   위험요소: string[];
   작업유형: string;
   위험부위: string[];
   추정위험등급: "상" | "중" | "하";
+  조회할법령: LawArticleHint[];
 }
 
 // ─── 유틸 ────────────────────────────────────────────────────
@@ -112,7 +127,14 @@ export async function extractHazards(
       const text = result.response.text();
       if (!text) throw new Error("Gemini 응답 없음");
 
-      const parsed = JSON.parse(cleanJson(text)) as HazardExtraction;
+      const raw = JSON.parse(cleanJson(text)) as Partial<HazardExtraction>;
+      const parsed: HazardExtraction = {
+        위험요소: Array.isArray(raw.위험요소) ? raw.위험요소 : [],
+        작업유형: raw.작업유형 ?? "기타",
+        위험부위: Array.isArray(raw.위험부위) ? raw.위험부위 : [],
+        추정위험등급: raw.추정위험등급 ?? "중",
+        조회할법령: Array.isArray(raw.조회할법령) ? raw.조회할법령 : [],
+      };
       console.log("[Stage1] 위험요소 추출:", parsed);
       return parsed;
     } catch (error) {

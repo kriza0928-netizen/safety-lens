@@ -51,10 +51,7 @@ export async function POST(request: Request) {
     let legalReferences: LegalReference[] = [];
 
     try {
-      articles = await fetchArticlesForHazards(
-        hazardExtraction.위험요소,
-        hazardExtraction.작업유형,
-      );
+      articles = await fetchArticlesForHazards(hazardExtraction);
       console.log(`[Analyze] Stage 2 완료: 조문 ${articles.length}건`);
 
       legalReferences = articles.map((a) => ({
